@@ -1,0 +1,42 @@
+{
+  "name": "spyton-hunters",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": "20.x"
+  },
+  "scripts": {
+    "postinstall": "prisma generate",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "prisma": "prisma",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio",
+    "seed": "ts-node --transpile-only prisma/seed.ts",
+    "snapshot": "ts-node --transpile-only scripts/snapshot.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.18.0",
+    "@tonconnect/ui": "^2.0.11",
+    "@tonconnect/ui-react": "^2.0.11",
+    "date-fns": "^3.6.0",
+    "next": "^14.2.5",
+    "nanoid": "^5.0.7",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.10",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^14.2.5",
+    "prisma": "^5.18.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
+  }
+}
