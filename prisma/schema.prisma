@@ -1,0 +1,140 @@
+// SpyTON Hunters - Prisma schema
+// Default: PostgreSQL. For quick local testing you can swap provider to "sqlite" and set DATABASE_URL="file:./dev.db".
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum DexName {
+  DEDUST
+  STONFI
+  OTHER
+}
+
+enum SubmissionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum BoostStatus {
+  PENDING
+  ACTIVE
+  ENDED
+  CANCELLED
+}
+
+model Token {
+  id           String    @id @default(cuid())
+  jettonMaster String    @unique
+  name         String
+  symbol       String
+  imageUrl     String?
+  description  String?
+  website      String?
+  telegram     String?
+  twitter      String?
+  category     String?
+
+  isApproved   Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+
+  dexPairs     DexPair[]
+  votes        Vote[]
+  boosts       Boost[]
+  snapshots    Snapshot[]
+  submissions  Submission[]
+
+  @@index([createdAt])
+  @@index([isApproved, createdAt])
+}
+
+model DexPair {
+  id          String   @id @default(cuid())
+  tokenId     String
+  dex         DexName
+  poolAddress String?
+  url         String?
+
+  token       Token    @relation(fields: [tokenId], references: [id], onDelete: Cascade)
+
+  @@index([tokenId])
+  @@unique([tokenId, dex], name: "tokenId_dex")
+}
+
+model Vote {
+  id          String   @id @default(cuid())
+  tokenId     String
+  voterWallet String
+  createdAt   DateTime @default(now())
+
+  token       Token    @relation(fields: [tokenId], references: [id], onDelete: Cascade)
+
+  @@index([tokenId, createdAt])
+  @@index([voterWallet, createdAt])
+}
+
+model Boost {
+  id            String     @id @default(cuid())
+  tokenId       String
+  package       String
+  startAt       DateTime
+  endAt         DateTime
+  status        BoostStatus @default(PENDING)
+  paymentTxHash String?
+  createdAt     DateTime   @default(now())
+
+  token         Token      @relation(fields: [tokenId], references: [id], onDelete: Cascade)
+
+  @@index([tokenId])
+  @@index([status, startAt, endAt])
+}
+
+model Snapshot {
+  id            String   @id @default(cuid())
+  tokenId       String
+  ts            DateTime @default(now())
+
+  priceUsd      Float?
+  change24hPct  Float?
+  volume24hUsd  Float?
+  liquidityUsd  Float?
+  holders       Int?
+  mcapUsd       Float?
+
+  token         Token    @relation(fields: [tokenId], references: [id], onDelete: Cascade)
+
+  @@index([tokenId, ts])
+}
+
+model Submission {
+  id           String            @id @default(cuid())
+  status       SubmissionStatus  @default(PENDING)
+
+  jettonMaster String
+  name         String
+  symbol       String
+  imageUrl     String?
+  description  String?
+  website      String?
+  telegram     String?
+  twitter      String?
+  category     String?
+  // Wallet that submitted the project (TON Connect). Optional.
+  submitterWallet String?
+
+  reviewerNote String?
+  reviewedAt   DateTime?
+  createdAt    DateTime @default(now())
+
+  tokenId      String?
+  token        Token?   @relation(fields: [tokenId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([jettonMaster])
+}
